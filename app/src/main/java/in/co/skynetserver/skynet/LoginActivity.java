@@ -19,7 +19,6 @@ import android.os.Bundle;
  * limitations under the License.
  */
 import android.content.Intent;
-import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.View;
@@ -67,7 +66,7 @@ public class LoginActivity extends AppCompatActivity implements
         // Button listeners
         findViewById(R.id.sign_in_button).setOnClickListener(this);
         findViewById(R.id.sign_out_button).setOnClickListener(this);
-        findViewById(R.id.disconnect_button).setOnClickListener(this);
+        findViewById(R.id.get_in_button).setOnClickListener(this);
 
         // [START config_signin]
         // Configure Google Sign In
@@ -191,13 +190,13 @@ public class LoginActivity extends AppCompatActivity implements
             mDetailTextView.setText(getString(R.string.firebase_status_fmt, user.getUid()));
 
             findViewById(R.id.sign_in_button).setVisibility(View.GONE);
-            findViewById(R.id.sign_out_and_disconnect).setVisibility(View.VISIBLE);
+            findViewById(R.id.sign_out_and_get_in).setVisibility(View.VISIBLE);
         } else {
             mStatusTextView.setText(R.string.signed_out);
             mDetailTextView.setText(null);
 
             findViewById(R.id.sign_in_button).setVisibility(View.VISIBLE);
-            findViewById(R.id.sign_out_and_disconnect).setVisibility(View.GONE);
+            findViewById(R.id.sign_out_and_get_in).setVisibility(View.GONE);
         }
     }
 
@@ -208,7 +207,7 @@ public class LoginActivity extends AppCompatActivity implements
             signIn();
         } else if (i == R.id.sign_out_button) {
             signOut();
-        } else if (i == R.id.disconnect_button) {
+        } else if (i == R.id.get_in_button) {
             Intent intent = new Intent(this, HomeActivity.class);
             startActivity(intent);
 

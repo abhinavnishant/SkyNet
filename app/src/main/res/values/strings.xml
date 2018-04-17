@@ -1,9 +1,12 @@
 <resources>
     <string name="app_name">SkyNet</string>
     <string name="title_text">Hookup to\nSkyNet</string>
-
+    <!-- Custom Strings for Application -->
+    <string name="signed_in_name">Welcome %s</string>
     <!-- Sign-in status messages -->
     <string name="signed_in_fmt">Signed in as: %s</string>
+    <string name="no_device_found">You dont have a device Set Up.\n</string>
+    <string name="new_device_setup">Setup a New Device</string>
     <string name="google_status_fmt">Signed in as: %s</string>
     <string name="firebase_status_fmt">Firebase UUID: %s</string>
     <string name="signed_in">Signed in</string>
@@ -24,7 +27,7 @@
 
     <!-- Button labels -->
     <string name="sign_out">Sign Out</string>
-    <string name="disconnect">Disconnect</string>
+    <string name="get_in">Get In</string>
     <string name="refresh_token">Get Fresh Token</string>
 
     <!-- Content Description for images -->

@@ -4,15 +4,47 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="in.co.skynetserver.skynet.HomeActivity">
+    tools:context="in.co.skynetserver.skynet.HomeActivity"
+    tools:theme="@style/Base.ThemeOverlay.AppCompat.Dark">
 
-    <EditText
-        android:id="@+id/displayName"
+    <TextView
+        android:id="@+id/no_device_found"
+        android:layout_width="172dp"
+        android:layout_height="115dp"
+        android:layout_marginBottom="232dp"
+        android:layout_marginEnd="126dp"
+        android:layout_marginStart="127dp"
+        android:layout_marginTop="164dp"
+        android:textSize="36sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="@string/no_device_found" />
+
+    <TextView
+        android:id="@+id/signed_in_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:ems="10"
-        android:inputType="textPersonName"
-        android:text="Name"
-        tools:layout_editor_absoluteX="85dp"
-        tools:layout_editor_absoluteY="183dp" />
+        android:layout_marginStart="29dp"
+        android:layout_marginTop="31dp"
+        android:visibility="visible"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="@string/signed_in_name" />
+
+    <Button
+        android:id="@+id/new_device_setup"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="103dp"
+        android:layout_marginStart="109dp"
+        android:layout_marginTop="96dp"
+        android:onClick="onClick"
+        android:text="@string/new_device_setup"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/no_device_found" />
+
 </android.support.constraint.ConstraintLayout>
