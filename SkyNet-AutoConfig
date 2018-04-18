@@ -1,0 +1,190 @@
+#include <DHT.h>
+#include <DHT_U.h>
+#include <Adafruit_Sensor.h>
+#include <ESP8266WiFi.h>          //https://github.com/esp8266/Arduino
+
+//needed for library
+#include <DNSServer.h>
+#include <ESP8266WebServer.h>
+#include <WiFiManager.h>         //https://github.com/tzapu/WiFiManager
+#include <Ticker.h>
+
+//Firebase Library
+#include <Firebase.h>
+#include <FirebaseArduino.h>
+#include <FirebaseCloudMessaging.h>
+#include <FirebaseError.h>
+#include <FirebaseHttpClient.h>
+#include <FirebaseObject.h>
+
+
+#define FIREBASE_HOST "skynet-v1-0.firebaseio.com"
+#define FIREBASE_AUTH "oQGZjLfBFtHJgefcf2OH6L2wtkYgpojDx0iZuX1e"
+#define DHTPIN 5
+#define DHTTYPE DHT11
+#define STATUS_PIN 2
+#define OUTPUT_1 14
+#define OUTPUT_2 4
+#define OUTPUT_3 5
+#define OUTPUT_4 16
+#define TRIGGER_PIN 0
+#define DEVICE_TYPE  1
+
+
+Ticker ticker;
+DHT dht(DHTPIN, DHTTYPE);
+const int analog_ip = A0; //Naming analog input pin
+int lightVal  = 0;
+float tempVal = 0;
+float humVal = 0;
+String wifiMAC = WiFi.macAddress();
+String cID = String(ESP.getChipId()).c_str();
+
+void setup() {
+    Serial.begin(115200);
+    dht.begin();
+    pinMode(STATUS_PIN, OUTPUT);pinMode(OUTPUT_1, OUTPUT);pinMode(OUTPUT_2, OUTPUT);pinMode(OUTPUT_3, OUTPUT);pinMode(OUTPUT_4, OUTPUT);
+    pinMode(TRIGGER_PIN, INPUT);
+    connCheck(90,300);
+    Firebase.begin(FIREBASE_HOST, FIREBASE_AUTH);
+    initCheck();
+    }
+
+void initCheck()  {
+  if(!Firebase.getBool("Device/"+cID+"/Command/init"))
+     reg();
+
+  else if(!Firebase.getBool("Device/"+cID+"/Command/setup"))  {
+     Firebase.setString("Device/" +cID+ "/Message", "Device registered, setup needed.");
+
+  }
+  else
+    Firebase.setString("Device/" +cID+ "/Message", "Device registered and active.");
+  }
+
+void connCheck(int a,int b)
+{
+    WiFiManager wifiManager;
+    while (WiFi.status() != WL_CONNECTED){
+    ticker.attach(0.05, tick);
+    wifiManager.setConnectTimeout(a);
+    wifiManager.setConfigPortalTimeout(b);
+    if(!wifiManager.autoConnect("SkyNet-AutoConfig"))
+    ESP.restart();
+   }
+}
+
+
+void reg()
+  {
+  Firebase.setString("Device/"+cID, cID);
+  Firebase.setString("Device/"+cID+"/Info/WiFiMAC", wifiMAC);
+  Firebase.setString("Device/"+cID+"/Info/ChipID", cID);
+  Firebase.setBool("Device/"+cID+"/Command/init", true);
+  Firebase.setBool("Device/"+cID+"/Command/registered", false);
+  Firebase.setBool("Device/"+cID+"/Command/setup", true);
+  Firebase.setInt("Device/"+cID+"/Data/ldr", lightVal);
+  Firebase.setFloat("Device/"+cID+"/Data/temp",tempVal);
+  Firebase.setFloat("Device/"+cID+"/Data/hum", humVal);
+  Firebase.setInt("Device/"+cID+"/Info/type", DEVICE_TYPE);
+  Firebase.setBool("Device/"+cID+"/State/switch"+0, true);
+  Firebase.setBool("Device/"+cID+"/State/switch"+1, false);
+  Firebase.setBool("Device/"+cID+"/State/switch"+2, false);
+  Firebase.setBool("Device/"+cID+"/State/switch"+3, false);
+  Firebase.setBool("Device/"+cID+"/State/switch"+4, false);
+  Firebase.setString("Device/"+cID+"/Info/ssid", WiFi.SSID());
+  Firebase.setString("Device/"+cID+"/Info/ipAdd",  WiFi.localIP().toString());
+  Firebase.setString("Device/"+cID+"/Message", "Device initialized but not registered.");
+  }
+
+
+void loop()
+{
+  ticker.detach();
+  //initCheck(true);
+
+  if(!Firebase.getBool("Device/"+cID+"/Command/init") || !Firebase.getBool("Device/"+cID+"/Command/setup"))
+  {
+  if(!Firebase.getBool("Device/"+cID+"/Command/init"))
+  rst();
+  else if(!Firebase.getBool("Device/"+cID+"/Command/setup"))
+  connCheck(0,300);
+  }
+
+else{
+      ticker.attach(.5, tick);
+      getState();
+      for(int i=0;i<30;i++)
+      {
+      setState();
+      delay(1000);
+      }
+}
+}
+
+void rst()
+{
+   WiFiManager wifiManager;
+   wifiManager.resetSettings();
+   connCheck(0,300);
+  }
+
+
+void setState()
+{
+     if(Firebase.getBool("Device/"+cID+"/State/switch"+0))
+     digitalWrite(STATUS_PIN,HIGH);
+     else
+     digitalWrite(STATUS_PIN, LOW);
+
+     if(Firebase.getBool("Device/"+cID+"/State/switch"+1))
+     digitalWrite(OUTPUT_1,HIGH);
+     else
+     digitalWrite(OUTPUT_1, LOW);
+
+     if(Firebase.getBool("Device/"+cID+"/State/switch"+2))
+     digitalWrite(OUTPUT_2,HIGH);
+     else
+     digitalWrite(OUTPUT_2, LOW);
+
+     if(Firebase.getBool("Device/"+cID+"/State/switch"+3))
+     digitalWrite(OUTPUT_3,HIGH);
+     else
+     digitalWrite(OUTPUT_3, LOW);
+
+     if(Firebase.getBool("Device/"+cID+"/State/switch"+4))
+     digitalWrite(OUTPUT_4,HIGH);
+     else
+     digitalWrite(OUTPUT_4, LOW);
+
+     if (Firebase.failed())
+     {
+        Serial.print("Setting State failed:");
+        Serial.println(Firebase.error());
+        connCheck(20,0);
+        return;
+     }
+  }
+
+void getState()
+{
+   lightVal = analogRead (analog_ip); // Analog Values 0 to 1023
+   tempVal = dht.readTemperature();
+   humVal = dht.readHumidity();
+   Firebase.setInt("Device/" +cID+"/Data/ldr", lightVal);
+   Firebase.setFloat("Device/"+cID+"/Data/temp", tempVal);
+   Firebase.setFloat("Device/"+cID+"/Data/hum", humVal);
+   if (Firebase.failed())
+   {
+        Serial.print("Getting State failed:");
+        Serial.println(Firebase.error());
+        return;
+   }
+}
+
+
+void tick()
+{
+  int state = digitalRead(STATUS_PIN);
+  digitalWrite(STATUS_PIN, !state);
+}

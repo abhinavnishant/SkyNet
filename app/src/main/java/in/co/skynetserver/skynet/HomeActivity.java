@@ -31,14 +31,13 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
         Intent intent = getIntent();
-
         mSignedInName = findViewById(R.id.signed_in_name);
         mSetUpNewDevice = findViewById(R.id.new_device_setup);
         mStatusTextView =findViewById(R.id.no_device_found);
         mAuth = FirebaseAuth.getInstance();
         FirebaseUser  currentUser = mAuth.getCurrentUser();
         mSignedInName.setText(getString(signed_in_name, currentUser.getDisplayName()));
-
+        updateUI(currentUser);
 
        // mSignedInName.setText(getString(R.string.signed_in_name, currentUser.getDisplayName()));
         //ref.child(currentUser.getUid()).setValue(currentUser.getUid());
@@ -48,8 +47,8 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onStart() {
         super.onStart();
-        FirebaseUser user = mAuth.getCurrentUser();
-        updateUI(user);
+
+
 
 }
 
@@ -86,12 +85,13 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
 
         @Override
         public void onClick(View view) {
-
-        FirebaseUser user = mAuth.getCurrentUser();
+            Intent intent = new Intent(this, DeviceSetup.class);
+            startActivity(intent);
+        /*FirebaseUser user = mAuth.getCurrentUser();
         DatabaseReference ref =FirebaseDatabase.getInstance().getReference();
         mStatusTextView.setText(getString(R.string.firebase_status_fmt,user.getUid()));
         ref.child("users").child(user.getUid()).setValue(user.getUid());
         ref.child("users").child(user.getUid()).child("name").setValue(user.getDisplayName());
-
+        updateUI(user);*/
         }
     }
