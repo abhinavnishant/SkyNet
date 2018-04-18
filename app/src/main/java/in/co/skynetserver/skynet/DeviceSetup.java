@@ -15,6 +15,7 @@ import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.text.TextUtils;
 import android.util.Log;
+import android.webkit.WebView;
 import android.widget.TextView;
 
 import java.util.List;
@@ -25,6 +26,8 @@ import static in.co.skynetserver.skynet.R.string.ssid;
 public class DeviceSetup extends AppCompatActivity {
 
     protected TextView mSSID;
+    protected WebView webView;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -32,6 +35,16 @@ public class DeviceSetup extends AppCompatActivity {
         Intent intent = getIntent();
         //mSSID.setText(R.string.no_device_found);
         connectToWifi();
+        try {
+            Thread.sleep(15000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        webView = (WebView) findViewById(R.id.autoconfig);
+        webView.getSettings().setJavaScriptEnabled(true);
+        webView.loadUrl("http://192.168.4.1/");
+
 //        mSSID.setText(R.string.ssid);
 
     }
@@ -102,6 +115,7 @@ public class DeviceSetup extends AppCompatActivity {
         wifiManager.disconnect();
         wifiManager.enableNetwork(netId, true);
         wifiManager.reconnect();
+
     //}
     }
     public String getCurrentSSID(WifiManager wifiManager) {
