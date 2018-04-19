@@ -15,6 +15,7 @@ import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.View;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -29,6 +30,7 @@ public class DeviceSetup extends AppCompatActivity {
 
     protected TextView mSSID;
     protected WebView webView;
+    protected View mView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,15 +38,28 @@ public class DeviceSetup extends AppCompatActivity {
         setContentView(R.layout.activity_device_setup);
         Intent intent = getIntent();
         //mSSID.setText(R.string.no_device_found);
+        webView = findViewById(R.id.autoconfig);
+        mSSID = findViewById(R.id.ssid);
+        webView.getSettings().setJavaScriptEnabled(true);
 
-
-//        mSSID.setText(R.string.ssid);
+        WifiManager wifiManager = (WifiManager) super.getApplicationContext().getSystemService(android.content.Context.WIFI_SERVICE);
+       WifiInfo wifiInfo = wifiManager.getConnectionInfo();
+        final String currentSSID;
+        currentSSID = getCurrentSSID();
+        mSSID.setText(currentSSID);
+        try {
+            Thread.sleep(10000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        mSSID.setText(wifiInfo.getSSID());
 
     }
 
     protected void onStart() {
 
         super.onStart();
+
         connectToWifi();
         try {
             Thread.sleep(10000);
@@ -52,12 +67,11 @@ public class DeviceSetup extends AppCompatActivity {
             e.printStackTrace();
         }
 
-        webView = (WebView) findViewById(R.id.autoconfig);
-        webView.getSettings().setJavaScriptEnabled(true);
         webView.loadUrl("http://192.168.4.1/");
         webView.setWebViewClient(new WebViewClient() {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, String request) {
+                view.loadUrl(request);
                 return false;
             }
         });
@@ -75,10 +89,9 @@ public class DeviceSetup extends AppCompatActivity {
 
             wifiManager.setWifiEnabled(true);
             int netId = wifiManager.addNetwork(wc);
-            if (netId == -1) {
-                netId = getExistingNetworkId(wc.SSID);
+            netId = getExistingNetworkId(wc.SSID);
                 //mSSID.setText(netId);
-            }
+
             wifiManager.disconnect();
             wifiManager.enableNetwork(netId, true);
             wifiManager.reconnect();
@@ -100,8 +113,9 @@ public class DeviceSetup extends AppCompatActivity {
         return -1;
     }
 
-    public String getCurrentSSID(WifiManager wifiManager) {
+    public String getCurrentSSID() {
         String ssid = null;
+        WifiManager wifiManager = (WifiManager) super.getApplicationContext().getSystemService(android.content.Context.WIFI_SERVICE);
         ConnectivityManager connManager = (ConnectivityManager)getApplicationContext().getSystemService(CONNECTIVITY_SERVICE);
         NetworkInfo networkInfo = connManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
         if (networkInfo.isConnected()) {
